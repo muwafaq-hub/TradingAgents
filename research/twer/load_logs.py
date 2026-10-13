@@ -25,6 +25,9 @@ def _parse_time(value, field, row_number, errors):
         if parsed.tzinfo is None or parsed.utcoffset() is None:
             errors.append(f"row {row_number}: {field} must include a timezone")
             return None
+        if parsed.utcoffset().total_seconds() != 0:
+            errors.append(f"row {row_number}: {field} must be UTC (offset +00:00)")
+            return None
         return parsed
     except ValueError:
         errors.append(f"row {row_number}: invalid ISO-8601 timestamp in {field}")
@@ -58,6 +61,10 @@ def validate_rows(rows, kind):
         "rejects.csv": "candidate_id",
     }[kind]
     for index, row in enumerate(rows, start=2):
+        required_values = ("schema_version", "engine_version", "parameter_set_hash", "population", "setup_id", "symbol", "timeframe", "side", "event_time_utc", "bar_time_utc", "state")
+        for field in required_values:
+            if not row.get(field, "").strip():
+                errors.append(f"row {index}: {field} is required")
         if row.get("schema_version") != SCHEMA_VERSION:
             errors.append(f"row {index}: unsupported schema_version {row.get('schema_version')!r}")
         if not row.get("engine_version", "").strip():
