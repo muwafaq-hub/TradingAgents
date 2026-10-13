@@ -1,0 +1,1 @@
+Temporary write-permission test for branch twer-integration. If this file exists, GitHub write access succeeded. Safe to delete after verification.
